@@ -55,6 +55,7 @@ public class MemberService {
         return memberRepository.findByNameContainingIgnoreCase(name);
     }
 
+    // service/MemberService.java
     public Member updateMember(Long id, Member memberDetails) {
         Member member = memberRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Member not found with id: " + id));

@@ -77,6 +77,7 @@ public class LoanService {
         return loanRepository.findOverdueLoans(LocalDate.now());
     }
 
+    // service/LoanService.java
     public Loan returnBook(Long loanId) {
         Loan loan = loanRepository.findById(loanId)
                 .orElseThrow(() -> new RuntimeException("Loan not found with id: " + loanId));

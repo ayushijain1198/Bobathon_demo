@@ -68,6 +68,7 @@ public class BookService {
         bookRepository.deleteById(id);
     }
 
+    // service/BookService.java
     public void decreaseAvailableCopies(Long bookId) {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new RuntimeException("Book not found with id: " + bookId));
