@@ -29,4 +29,4 @@ OUTPUT FORMAT (must follow exactly):
 If there are NO meaningful issues, output exactly:
 
 ## 🔍 Bob PR Review
-✅ It all looks good.
+✅ It all looks good!
