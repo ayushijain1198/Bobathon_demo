@@ -79,6 +79,7 @@ public class MemberService {
         memberRepository.save(member);
     }
 
+    // service/MemberService.java
     public void activateMember(Long id) {
         Member member = memberRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Member not found with id: " + id));
