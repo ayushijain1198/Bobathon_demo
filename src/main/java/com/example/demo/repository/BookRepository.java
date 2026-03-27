@@ -25,7 +25,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     
     List<Book> findByIsbn(String isbn);
 
-    @Query(value = "SELECT * FROM books WHERE title LIKE '%" + ":searchTerm" + "%'", nativeQuery = true)
+    @Query(value = "SELECT * FROM books WHERE title LIKE CONCAT('%', :searchTerm, '%')", nativeQuery = true)
     List<Book> searchBooksByTitle(@Param("searchTerm") String searchTerm);
 }
 

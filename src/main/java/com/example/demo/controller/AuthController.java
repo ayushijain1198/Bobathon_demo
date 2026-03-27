@@ -63,10 +63,10 @@ public class AuthController {
             return ResponseEntity.ok(new AuthResponse(token, user.getUsername(), user.getRole()));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Authentication failed: " + e.getMessage() + " for user: " + loginRequest.getUsername());
+                    .body("Invalid username or password");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error: " + e.getClass().getName() + " - " + e.getMessage());
+                    .body("An error occurred during login");
         }
     }
 
@@ -122,7 +122,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Token validation error: " + e.toString());
+                    .body("Token validation failed");
         }
     }
 }

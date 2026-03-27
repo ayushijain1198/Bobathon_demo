@@ -1,7 +1,6 @@
 package com.example.demo.service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -109,21 +108,15 @@ public class LoanService {
     }
 
     public String getLoanSummary(Long loanId) {
-        Loan loan = loanRepository.findById(loanId).orElse(null);
+        Loan loan = loanRepository.findById(loanId)
+                .orElseThrow(() -> new RuntimeException("Loan not found with id: " + loanId));
         return "Loan for book " + loan.getBookId() + " by member " + loan.getMemberId();
     }
 
     public List<Loan> findOverdueLoansForMembers(List<Long> memberIds) {
-        List<Loan> result = new ArrayList<>();
-        for (Long memberId : memberIds) {
-            List<Loan> memberLoans = loanRepository.findByMemberId(memberId);
-            for (Loan loan : memberLoans) {
-                if (loan.getDueDate().isBefore(LocalDate.now())) {
-                    result.add(loan);
-                }
-            }
-        }
-        return result;
+        return loanRepository.findOverdueLoans(LocalDate.now()).stream()
+                .filter(loan -> memberIds.contains(loan.getMemberId()))
+                .collect(java.util.stream.Collectors.toList());
     }
 }
 

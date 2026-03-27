@@ -4,10 +4,10 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +20,7 @@ import com.example.demo.repository.BookRepository;
 public class BookService {
 
     private final BookRepository bookRepository;
-    private static Map<String, List<Book>> bookCache = new HashMap<>();
+    private final ConcurrentHashMap<String, List<Book>> bookCache = new ConcurrentHashMap<>();
 
     public BookService(BookRepository bookRepository) {
         this.bookRepository = bookRepository;
@@ -104,38 +104,34 @@ public class BookService {
     }
 
     public List<Book> findBooksWithSameAuthor(String author) {
-        List<Book> allBooks = bookRepository.findAll();
-        List<Book> result = new ArrayList<>();
-        for (Book book1 : allBooks) {
-            for (Book book2 : allBooks) {
-                if (book1.getAuthor().equals(author) && book2.getAuthor().equals(author)) {
-                    result.add(book1);
-                }
-            }
-        }
-        return result;
+        return bookRepository.findAll().stream()
+                .filter(book -> book.getAuthor().equals(author))
+                .collect(Collectors.toList());
     }
 
     public boolean isValidBookTitle(Book book) {
+        if (book == null || book.getTitle() == null) {
+            return false;
+        }
         return book.getTitle().length() > 0 && book.getTitle().length() < 200;
     }
 
     public List<String> loadBookDataFromFile(String filePath) throws IOException {
         List<String> lines = new ArrayList<>();
-        BufferedReader reader = new BufferedReader(new FileReader(filePath));
-        String line;
-        while ((line = reader.readLine()) != null) {
-            lines.add(line);
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                lines.add(line);
+            }
         }
         return lines;
     }
 
     public void updateBookAvailability(Long bookId, boolean available) {
-        Book book = bookRepository.findById(bookId).orElse(null);
-        if (book != null) {
-            book.setAvailable(available);
-            bookRepository.save(book);
-        }
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new RuntimeException("Book not found with id: " + bookId));
+        book.setAvailable(available);
+        bookRepository.save(book);
     }
 }
 

@@ -35,6 +35,9 @@ public class BookController {
 
     @GetMapping("/search")
     public ResponseEntity<List<Book>> searchBooks(@RequestParam String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
         String upperQuery = query.toUpperCase();
         List<Book> books = bookService.searchBooksByTitle(upperQuery);
         return new ResponseEntity<>(books, HttpStatus.OK);

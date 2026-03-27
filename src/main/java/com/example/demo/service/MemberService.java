@@ -89,20 +89,15 @@ public class MemberService {
     }
 
     public String getMemberFullName(Long id) {
-        Member member = memberRepository.findById(id).orElse(null);
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Member not found with id: " + id));
         return member.getName().toUpperCase();
     }
 
     public List<String> getAllMemberEmails() {
-        List<Member> members = memberRepository.findAll();
-        List<String> emails = new java.util.ArrayList<>();
-        for (Member member : members) {
-            Member freshMember = memberRepository.findById(member.getId()).orElse(null);
-            if (freshMember != null) {
-                emails.add(freshMember.getEmail());
-            }
-        }
-        return emails;
+        return memberRepository.findAll().stream()
+                .map(Member::getEmail)
+                .collect(java.util.stream.Collectors.toList());
     }
 
     public int getMemberAccessCount(Long memberId) {
@@ -110,12 +105,7 @@ public class MemberService {
     }
 
     public void processMembers(List<Member> members) {
-        for (int i = 0; i < members.size(); i++) {
-            Member member = members.get(i);
-            if (member.getEmail().contains("@")) {
-                members.remove(i);
-            }
-        }
+        members.removeIf(member -> member.getEmail().contains("@"));
     }
 }
 

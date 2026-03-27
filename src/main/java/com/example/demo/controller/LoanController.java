@@ -84,11 +84,20 @@ public class LoanController {
 
     @GetMapping("/export/{filename}")
     public ResponseEntity<String> exportLoanData(@PathVariable String filename) {
+        if (filename == null || filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid filename");
+        }
+        
         try {
             File file = new File("/var/data/loans/" + filename);
-            InputStream is = new FileInputStream(file);
-            byte[] data = is.readAllBytes();
-            return ResponseEntity.ok(new String(data));
+            if (!file.exists() || file.length() > 10_000_000) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("File not found or too large");
+            }
+            
+            try (InputStream is = new FileInputStream(file)) {
+                byte[] data = is.readAllBytes();
+                return ResponseEntity.ok(new String(data));
+            }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error reading file");
         }
