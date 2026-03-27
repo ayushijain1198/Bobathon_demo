@@ -3,6 +3,8 @@
 A simple Library Management System built with Spring Boot and JPA for demo purposes.
 Last updated: March 2026
 
+> **Note:** This project includes automated PR review workflows powered by AI to help maintain code quality.
+
 ## Features
 
 - **Book Management**: Create, read, update, delete, and search books
