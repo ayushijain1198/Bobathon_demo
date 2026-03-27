@@ -9,6 +9,7 @@ A simple Library Management System built with Spring Boot and JPA for demo purpo
 - **Loan Management**: Handle book borrowing and returns
 - **Overdue Tracking**: Track and manage overdue loans
 - **H2 In-Memory Database**: Easy setup with pre-loaded sample data
+- **Automated PR Reviews**: GitHub Actions workflows for code quality checks
 
 ## Technology Stack
 
@@ -188,3 +189,6 @@ src/main/java/com/example/demo/
 ## License
 
 This project is for demonstration purposes.
+## 🤖 Automated PR Reviews
+
+This repository includes automated code review workflows that will comment on your Pull Requests with improvement suggestions. See [PR_REVIEW_SETUP.md](PR_REVIEW_SETUP.md) for details.
