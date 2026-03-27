@@ -20,20 +20,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get changed files
-        run: |
-          git fetch origin "${{ github.event.pull_request.base.ref }}" --depth=1
-          git diff --name-only "origin/${{ github.event.pull_request.base.ref }}...HEAD" > changed_files.txt
-          cat changed_files.txt
-
-      - name: Prepare Bob input
-        run: |
-          cp .github/bob/pr-review-prompt.txt bob_input.txt
-          echo "" >> bob_input.txt
-          echo "Changed files:" >> bob_input.txt
-          cat changed_files.txt >> bob_input.txt
-
-      # ⚠️ IMPORTANT if using nvm (your case)
       - name: Load Node (nvm)
         run: |
           export NVM_DIR="$HOME/.nvm"
@@ -41,6 +27,20 @@ jobs:
           nvm use 22
           which bob
           bob --version
+
+      - name: Get PR diff
+        run: |
+          git fetch origin "${{ github.event.pull_request.base.ref }}" --depth=1
+          git diff -U5 "origin/${{ github.event.pull_request.base.ref }}...HEAD" > pr_diff.txt
+          wc -l pr_diff.txt
+          head -200 pr_diff.txt
+
+      - name: Prepare Bob input
+        run: |
+          cp .github/bob/pr-review-prompt.txt bob_input.txt
+          echo "" >> bob_input.txt
+          echo "PR Diff:" >> bob_input.txt
+          cat pr_diff.txt >> bob_input.txt
 
       - name: Run Bob review
         env:
@@ -54,11 +54,15 @@ jobs:
           PROMPT="$(cat bob_input.txt)"
 
           echo "Running Bob..."
-          bob --yolo --prompt "$PROMPT" > bob_review.md
+          bob --yolo --prompt "$PROMPT" > bob_raw.md
 
-      - name: Ensure output exists
+      - name: Extract final review
         run: |
-          test -f bob_review.md || echo "No issues found." > bob_review.md
+          awk '/^===FINAL_REVIEW===/{flag=1; next} flag' bob_raw.md > bob_review.md
+
+          if [ ! -s bob_review.md ]; then
+            echo "No significant issues found." > bob_review.md
+          fi
 
       - name: Post PR comment
         env:
