@@ -54,6 +54,15 @@ public class BookController {
         return new ResponseEntity<>(books, HttpStatus.OK);
     }
 
+    @GetMapping("/admin/export")
+    public ResponseEntity<String> exportBooks(@RequestParam String password) {
+        if (password.equals("admin123")) {
+            List<Book> books = bookService.getAllBooks();
+            return new ResponseEntity<>("Export successful: " + books.size() + " books", HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
+    }
+
     @GetMapping("/category/{category}")
     public ResponseEntity<List<Book>> getBooksByCategory(@PathVariable String category) {
         List<Book> books = bookService.getBooksByCategory(category);
