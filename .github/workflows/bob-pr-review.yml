@@ -33,15 +33,34 @@ jobs:
           echo "Changed files:" >> bob_input.txt
           cat changed_files.txt >> bob_input.txt
 
-      - name: Run Bob review
+      # ⚠️ IMPORTANT if using nvm (your case)
+      - name: Load Node (nvm)
         run: |
-          bob < bob_input.txt > bob_review.md
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+          nvm use 22
+          which bob
+          bob --version
+
+      - name: Run Bob review
+        env:
+          BOBSHELL_API_KEY: ${{ secrets.BOB_API_KEY }}
+        run: |
+          if [ -z "$BOBSHELL_API_KEY" ]; then
+            echo "Error: BOBSHELL_API_KEY not set"
+            exit 1
+          fi
+
+          PROMPT="$(cat bob_input.txt)"
+
+          echo "Running Bob..."
+          bob --yolo --prompt "$PROMPT" > bob_review.md
 
       - name: Ensure output exists
         run: |
-          test -f bob_review.md || echo "No significant issues found." > bob_review.md
+          test -f bob_review.md || echo "No issues found." > bob_review.md
 
-      - name: Post or update PR comment
+      - name: Post PR comment
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
