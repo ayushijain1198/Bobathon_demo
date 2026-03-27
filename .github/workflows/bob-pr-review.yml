@@ -34,6 +34,8 @@ jobs:
           cat changed_files.txt >> bob_input.txt
 
       - name: Run Bob review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           bob < bob_input.txt > bob_review.md
 
