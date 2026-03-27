@@ -1,28 +1,37 @@
-Review this pull request against the base branch.
+Review only the pull request diff for the changed files listed in changed_files.txt.
 
-Rules:
-- Review only the files listed in changed_files.txt
-- Ignore formatting-only issues
-- Ignore generated files, lockfiles, and snapshots
-- Focus on correctness, security, maintainability, performance, and missing tests
+Focus only on meaningful issues:
+- correctness bugs
+- security risks
+- performance concerns
+- maintainability problems
+- missing validation or tests
 
-Output format:
+Do not mention:
+- style-only issues
+- formatting-only issues
+- generated files
+- lockfiles
+- snapshots
+- unnecessary praise
+- low-value observations
+
+Output rules:
+- Be concise
+- Only include findings that are worth fixing
+- For each finding, include:
+  - file path
+  - issue
+  - why it matters
+  - suggested fix
+
+Use this format:
+
 # Bob Review Summary
 
-## High
-- [file path] Issue
-  - Why it matters
-  - Suggested fix
-
-## Medium
-- [file path] Issue
-  - Why it matters
-  - Suggested fix
-
-## Low
-- [file path] Issue
-  - Why it matters
-  - Suggested fix
+- [file path] issue
+  - Why it matters: ...
+  - Suggested fix: ...
 
 If there are no meaningful findings, output exactly:
-No significant issues found.
+It all looks good.
