@@ -7,6 +7,8 @@ Rules:
 - Ignore removed lines and unchanged context
 - Ignore formatting-only changes
 - Ignore generated files, lockfiles, and snapshots
+- Ignore .github/workflows/** files
+- Ignore README.md
 - Focus only on real issues introduced by this PR, such as:
   - missing null checks
   - edge cases
@@ -21,6 +23,7 @@ Rules:
 - Do not include separators like ---output---
 - Do not include any text before or after the final answer
 - Do not mention files without issues
+- Do not repeat the same finding
 
 Return ONLY the final answer starting with this exact line:
 ===FINAL_REVIEW===

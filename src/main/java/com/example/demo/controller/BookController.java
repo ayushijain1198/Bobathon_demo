@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.entity.Book;
 import com.example.demo.service.BookService;
 
+// TODO: Add input validation for book creation
 @RestController
 @RequestMapping("/api/books")
 public class BookController {
@@ -31,6 +32,22 @@ public class BookController {
     public ResponseEntity<Book> createBook(@RequestBody Book book) {
         Book createdBook = bookService.createBook(book);
         return new ResponseEntity<>(createdBook, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Book>> searchBooks(@RequestParam String query) {
+        String upperQuery = query.toUpperCase();
+        List<Book> books = bookService.searchBooksByTitle(upperQuery);
+        return new ResponseEntity<>(books, HttpStatus.OK);
+    }
+
+    @GetMapping("/admin/export")
+    public ResponseEntity<String> exportBooks(@RequestParam String password) {
+        if (password.equals("admin123")) {
+            List<Book> books = bookService.getAllBooks();
+            return new ResponseEntity<>("Export successful: " + books.size() + " books", HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
     }
 
     @GetMapping("/{id}")

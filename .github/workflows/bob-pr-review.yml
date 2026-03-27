@@ -21,6 +21,7 @@ jobs:
           fetch-depth: 0
 
       - name: Load Node (nvm)
+        shell: bash
         run: |
           export NVM_DIR="$HOME/.nvm"
           [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
@@ -29,11 +30,21 @@ jobs:
           bob --version
 
       - name: Get PR diff
+        shell: bash
         run: |
           git fetch origin "${{ github.event.pull_request.base.ref }}" --depth=1
-          git diff -U5 "origin/${{ github.event.pull_request.base.ref }}...HEAD" > pr_diff.txt
+
+          git diff -U5 "origin/${{ github.event.pull_request.base.ref }}...HEAD" \
+            -- . \
+            ':(exclude).github/workflows/**' \
+            ':(exclude)README.md' > pr_diff.txt
+
+          if [ ! -s pr_diff.txt ]; then
+            echo "No code diff to review." > pr_diff.txt
+          fi
 
       - name: Prepare Bob input
+        shell: bash
         run: |
           cp .github/bob/pr-review-prompt.txt bob_input.txt
           echo "" >> bob_input.txt
@@ -41,6 +52,7 @@ jobs:
           cat pr_diff.txt >> bob_input.txt
 
       - name: Run Bob review
+        shell: bash
         env:
           BOBSHELL_API_KEY: ${{ secrets.BOB_API_KEY }}
         run: |
@@ -50,9 +62,11 @@ jobs:
           fi
 
           PROMPT="$(cat bob_input.txt)"
+
           bob --yolo --prompt "$PROMPT" > bob_raw.md
 
       - name: Extract final review
+        shell: bash
         run: |
           awk '/^===FINAL_REVIEW===/{flag=1; next} flag' bob_raw.md > bob_extracted.md
 
@@ -61,7 +75,10 @@ jobs:
           else
             grep '^- ' bob_extracted.md \
               | sed 's/\[using tool attempt_completion:.*$//' \
+              | sed 's/\[Successfully completed.*$//' \
+              | sed 's/---output---.*$//' \
               | sed 's/[[:space:]]*$//' \
+              | awk 'length > 0' \
               | awk '!seen[$0]++' > bob_review.md || true
           fi
 
@@ -70,10 +87,9 @@ jobs:
           fi
 
       - name: Post PR comment
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh pr comment ${{ github.event.pull_request.number }} \
-            --body-file bob_review.md \
-            --edit-last \
-            --create-if-none
+            --body-file bob_review.md
