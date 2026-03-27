@@ -75,6 +75,10 @@ src/
 4. Create a PR with some code changes
 5. Watch Bob automatically review your code!
 
+## Demo Video
+
+📹 **Watch the demo video**: [Team Video Submission](https://ibm.ent.box.com/folder/373424512716)
+
 ---
 
 **Made with Bob** 🤖
