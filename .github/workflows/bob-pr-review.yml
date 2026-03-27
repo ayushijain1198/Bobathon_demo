@@ -20,12 +20,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Load Node (nvm)
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Bob
         shell: bash
         run: |
-          export NVM_DIR="$HOME/.nvm"
-          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-          nvm use 22
+          npm install -g bobshell
           which bob
           bob --version
 
