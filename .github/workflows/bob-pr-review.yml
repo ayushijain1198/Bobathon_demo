@@ -58,7 +58,13 @@ jobs:
 
       - name: Extract final review
         run: |
-          awk '/^===FINAL_REVIEW===/{flag=1; next} flag' bob_raw.md > bob_review.md
+          awk '/^===FINAL_REVIEW===/{flag=1; next} flag' bob_raw.md > bob_extracted.md
+
+          if grep -q "^No significant issues found\.$" bob_extracted.md; then
+            echo "No significant issues found." > bob_review.md
+          else
+            grep '^- ' bob_extracted.md > bob_review.md || true
+          fi
 
           if [ ! -s bob_review.md ]; then
             echo "No significant issues found." > bob_review.md

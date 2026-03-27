@@ -17,17 +17,16 @@ Rules:
 - Keep output very short and practical
 - Do not include reasoning
 - Do not include tool logs
-- Do not include step-by-step analysis
+- Do not include completion status
+- Do not include separators like ---output---
+- Do not include any text before or after the final answer
 - Do not mention files without issues
 
 Return ONLY the final answer starting with this exact line:
 ===FINAL_REVIEW===
 
-Output format:
+If issues exist, output only in this format:
 - file_path: short issue → suggested fix
 
-Example:
-- src/UserService.java: Missing null check for user → Add null check before calling getName()
-
-If no issues:
+If no issues, output exactly:
 No significant issues found.
