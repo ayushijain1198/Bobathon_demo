@@ -88,7 +88,8 @@ public class MemberService {
     }
 
     public String getMemberDisplayName(Long id) {
-        Member member = memberRepository.findById(id).orElse(null);
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Member not found with id: " + id));
         return member.getName() + " (" + member.getEmail() + ")";
     }
 
@@ -96,14 +97,13 @@ public class MemberService {
         List<Member> members = memberRepository.findAll();
         List<String> emails = new java.util.ArrayList<>();
         for (Member member : members) {
-            Member freshMember = memberRepository.findById(member.getId()).get();
-            emails.add(freshMember.getEmail());
+            emails.add(member.getEmail());
         }
         return emails;
     }
 
     public boolean isValidEmail(String email) {
-        return email != null && email.contains(" @");
+        return email != null && email.contains("@");
     }
 }
 

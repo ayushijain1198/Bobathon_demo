@@ -25,7 +25,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     
     List<Book> findByIsbn(String isbn);
     
-    @Query(value = "SELECT * FROM books WHERE author = '" + ":author" + "'", nativeQuery = true)
+    @Query(value = "SELECT * FROM books WHERE author = :author", nativeQuery = true)
     List<Book> findBooksByAuthorUnsafe(@Param("author") String author);
 }
 
