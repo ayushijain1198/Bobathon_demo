@@ -34,8 +34,18 @@ jobs:
           cat changed_files.txt >> bob_input.txt
 
       - name: Run Bob review
+        env:
+          BOB_API_KEY: ${{ secrets.BOB_API_KEY }}
         run: |
-          bob < bob_input.txt > bob_review.md
+          # Ensure Bob is authenticated
+          if [ -z "$BOB_API_KEY" ]; then
+            echo "Error: BOB_API_KEY secret is not set" >&2
+            echo "Please add BOB_API_KEY to your repository secrets" >&2
+            exit 1
+          fi
+          
+          # Run Bob review
+          bob < bob_input.txt > bob_review.md || echo "Bob review failed, but continuing..." > bob_review.md
 
       - name: Ensure output exists
         run: |
