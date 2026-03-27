@@ -20,20 +20,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get changed files
-        run: |
-          git fetch origin "${{ github.event.pull_request.base.ref }}" --depth=1
-          git diff --name-only "origin/${{ github.event.pull_request.base.ref }}...HEAD" > changed_files.txt
-          cat changed_files.txt
-
-      - name: Prepare Bob input
-        run: |
-          cp .github/bob/pr-review-prompt.txt bob_input.txt
-          echo "" >> bob_input.txt
-          echo "Changed files:" >> bob_input.txt
-          cat changed_files.txt >> bob_input.txt
-
-      # ⚠️ IMPORTANT if using nvm (your case)
       - name: Load Node (nvm)
         run: |
           export NVM_DIR="$HOME/.nvm"
@@ -41,6 +27,18 @@ jobs:
           nvm use 22
           which bob
           bob --version
+
+      - name: Get PR diff
+        run: |
+          git fetch origin "${{ github.event.pull_request.base.ref }}" --depth=1
+          git diff -U5 "origin/${{ github.event.pull_request.base.ref }}...HEAD" > pr_diff.txt
+
+      - name: Prepare Bob input
+        run: |
+          cp .github/bob/pr-review-prompt.txt bob_input.txt
+          echo "" >> bob_input.txt
+          echo "PR Diff:" >> bob_input.txt
+          cat pr_diff.txt >> bob_input.txt
 
       - name: Run Bob review
         env:
@@ -52,13 +50,24 @@ jobs:
           fi
 
           PROMPT="$(cat bob_input.txt)"
+          bob --yolo --prompt "$PROMPT" > bob_raw.md
 
-          echo "Running Bob..."
-          bob --yolo --prompt "$PROMPT" > bob_review.md
-
-      - name: Ensure output exists
+      - name: Extract final review
         run: |
-          test -f bob_review.md || echo "No issues found." > bob_review.md
+          awk '/^===FINAL_REVIEW===/{flag=1; next} flag' bob_raw.md > bob_extracted.md
+
+          if grep -q "^No significant issues found\.$" bob_extracted.md; then
+            echo "No significant issues found." > bob_review.md
+          else
+            grep '^- ' bob_extracted.md \
+              | sed 's/\[using tool attempt_completion:.*$//' \
+              | sed 's/[[:space:]]*$//' \
+              | awk '!seen[$0]++' > bob_review.md || true
+          fi
+
+          if [ ! -s bob_review.md ]; then
+            echo "No significant issues found." > bob_review.md
+          fi
 
       - name: Post PR comment
         env:

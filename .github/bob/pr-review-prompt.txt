@@ -1,28 +1,32 @@
-Review this pull request against the base branch.
+Review this pull request based ONLY on the diff provided.
 
 Rules:
-- Review only the files listed in changed_files.txt
-- Ignore formatting-only issues
+- Review ONLY the code changes shown in the diff
+- Analyze only added or modified lines in the diff
+- Do NOT review the whole file or class
+- Ignore removed lines and unchanged context
+- Ignore formatting-only changes
 - Ignore generated files, lockfiles, and snapshots
-- Focus on correctness, security, maintainability, performance, and missing tests
+- Focus only on real issues introduced by this PR, such as:
+  - missing null checks
+  - edge cases
+  - incorrect logic
+  - unsafe handling
+  - performance problems in new code
+  - missing validation
+- Keep output very short and practical
+- Do not include reasoning
+- Do not include tool logs
+- Do not include completion status
+- Do not include separators like ---output---
+- Do not include any text before or after the final answer
+- Do not mention files without issues
 
-Output format:
-# Bob Review Summary
+Return ONLY the final answer starting with this exact line:
+===FINAL_REVIEW===
 
-## High
-- [file path] Issue
-  - Why it matters
-  - Suggested fix
+If issues exist, output only in this format:
+- file_path: short issue → suggested fix
 
-## Medium
-- [file path] Issue
-  - Why it matters
-  - Suggested fix
-
-## Low
-- [file path] Issue
-  - Why it matters
-  - Suggested fix
-
-If there are no meaningful findings, output exactly:
+If no issues, output exactly:
 No significant issues found.
