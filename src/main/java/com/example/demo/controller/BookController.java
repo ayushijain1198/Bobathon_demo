@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.entity.Book;
 import com.example.demo.service.BookService;
 
+// TODO: Add input validation for book creation
 @RestController
 @RequestMapping("/api/books")
 public class BookController {
