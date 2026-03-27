@@ -33,49 +33,34 @@ jobs:
           echo "Changed files:" >> bob_input.txt
           cat changed_files.txt >> bob_input.txt
 
-      - name: Debug Bob setup
+      # ⚠️ IMPORTANT if using nvm (your case)
+      - name: Load Node (nvm)
         run: |
-          echo "Event: ${{ github.event_name }}"
-          echo "Bob path: $(which bob || echo 'bob not found')"
-          bob --version || true
-          
-          if [ -n "$BOB_API_KEY" ]; then
-            echo "BOB_API_KEY is present"
-          else
-            echo "BOB_API_KEY is missing"
-          fi
-          
-          if [ -n "$API_KEY" ]; then
-            echo "API_KEY is present"
-          else
-            echo "API_KEY is missing"
-          fi
-        env:
-          BOB_API_KEY: ${{ secrets.BOB_API_KEY }}
-          API_KEY: ${{ secrets.BOB_API_KEY }}
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+          nvm use 22
+          which bob
+          bob --version
 
       - name: Run Bob review
         env:
-          BOB_API_KEY: ${{ secrets.BOB_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.BOB_API_KEY }}
-          API_KEY: ${{ secrets.BOB_API_KEY }}
+          BOBSHELL_API_KEY: ${{ secrets.BOB_API_KEY }}
         run: |
-          # Ensure Bob is authenticated
-          if [ -z "$BOB_API_KEY" ]; then
-            echo "Error: BOB_API_KEY secret is not set" >&2
-            echo "Please add BOB_API_KEY to your repository secrets" >&2
+          if [ -z "$BOBSHELL_API_KEY" ]; then
+            echo "Error: BOBSHELL_API_KEY not set"
             exit 1
           fi
-          
-          echo "Running Bob review with authentication..."
-          # Run Bob review
-          bob < bob_input.txt > bob_review.md || echo "Bob review failed, but continuing..." > bob_review.md
+
+          PROMPT="$(cat bob_input.txt)"
+
+          echo "Running Bob..."
+          bob --yolo --prompt "$PROMPT" > bob_review.md
 
       - name: Ensure output exists
         run: |
-          test -f bob_review.md || echo "No significant issues found." > bob_review.md
+          test -f bob_review.md || echo "No issues found." > bob_review.md
 
-      - name: Post or update PR comment
+      - name: Post PR comment
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
