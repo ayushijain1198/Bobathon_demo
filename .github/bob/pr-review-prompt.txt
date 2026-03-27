@@ -1,37 +1,32 @@
-Review only the pull request diff for the changed files listed in changed_files.txt.
+Review only the pull request diff for the files listed in changed_files.txt.
 
-Focus only on meaningful issues:
+Focus ONLY on real, actionable issues:
 - correctness bugs
 - security risks
-- performance concerns
-- maintainability problems
-- missing validation or tests
+- performance problems
+- maintainability concerns
+- missing validation or edge cases
 
-Do not mention:
-- style-only issues
-- formatting-only issues
-- generated files
-- lockfiles
-- snapshots
-- unnecessary praise
-- low-value observations
+STRICT RULES:
+- Do NOT explain your thinking
+- Do NOT describe what you analyzed
+- Do NOT list files unless there is an issue
+- Do NOT mention style-only or formatting issues
+- Do NOT include unnecessary text
 
-Output rules:
-- Be concise
-- Only include findings that are worth fixing
-- For each finding, include:
-  - file path
-  - issue
-  - why it matters
-  - suggested fix
+OUTPUT FORMAT (must follow exactly):
 
-Use this format:
+## 🔍 Bob PR Review
 
-# Bob Review Summary
+- <file_path>: <short issue title>
+  - Why: <1 short line>
+  - Fix: <1 short actionable suggestion>
 
-- [file path] issue
-  - Why it matters: ...
-  - Suggested fix: ...
+- <file_path>: <short issue title>
+  - Why: <1 short line>
+  - Fix: <1 short actionable suggestion>
 
-If there are no meaningful findings, output exactly:
-It all looks good.
+If there are NO meaningful issues, output exactly:
+
+## 🔍 Bob PR Review
+✅ It all looks good.
