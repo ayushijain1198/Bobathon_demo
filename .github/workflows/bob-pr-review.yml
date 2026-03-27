@@ -62,7 +62,6 @@ jobs:
           fi
 
           PROMPT="$(cat bob_input.txt)"
-
           bob --yolo --prompt "$PROMPT" > bob_raw.md
 
       - name: Extract final review
@@ -73,13 +72,12 @@ jobs:
           if grep -q "^No significant issues found\.$" bob_extracted.md; then
             echo "No significant issues found." > bob_review.md
           else
-            grep '^- ' bob_extracted.md \
-              | sed 's/\[using tool attempt_completion:.*$//' \
+            sed 's/\[using tool attempt_completion:.*$//' bob_extracted.md \
               | sed 's/\[Successfully completed.*$//' \
               | sed 's/---output---.*$//' \
               | sed 's/[[:space:]]*$//' \
-              | awk 'length > 0' \
-              | awk '!seen[$0]++' > bob_review.md || true
+              | awk 'NF' \
+              | awk '!seen[$0]++' > bob_review.md
           fi
 
           if [ ! -s bob_review.md ]; then

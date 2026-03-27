@@ -9,13 +9,7 @@ Rules:
 - Ignore generated files, lockfiles, and snapshots
 - Ignore .github/workflows/** files
 - Ignore README.md
-- Focus only on real issues introduced by this PR, such as:
-  - missing null checks
-  - edge cases
-  - incorrect logic
-  - unsafe handling
-  - performance problems in new code
-  - missing validation
+- Focus only on real issues introduced by this PR
 - Keep output very short and practical
 - Do not include reasoning
 - Do not include tool logs
@@ -25,11 +19,22 @@ Rules:
 - Do not mention files without issues
 - Do not repeat the same finding
 
+Group issues by file.
+
 Return ONLY the final answer starting with this exact line:
 ===FINAL_REVIEW===
 
-If issues exist, output only in this format:
-- file_path: short issue → suggested fix
+Output format:
 
-If no issues, output exactly:
+file_path:
+- issue → fix
+- issue → fix
+
+Example:
+
+src/UserService.java:
+- Missing null check → Add null check before use
+- Using System.out.println → Replace with logger
+
+If no issues:
 No significant issues found.
