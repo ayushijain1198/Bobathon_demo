@@ -33,6 +33,17 @@ jobs:
           echo "Changed files:" >> bob_input.txt
           cat changed_files.txt >> bob_input.txt
 
+      - name: Check Bob API key
+        env:
+          API_KEY: ${{ secrets.BOB_API_KEY }}
+        run: |
+          if [ -z "$API_KEY" ]; then
+            echo "API_KEY is missing"
+            exit 1
+          else
+            echo "API_KEY is present"
+          fi
+          
       - name: Run Bob review
         env:
           API_KEY: ${{ secrets.BOB_API_KEY }}
