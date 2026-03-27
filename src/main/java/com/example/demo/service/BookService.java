@@ -13,6 +13,8 @@ import com.example.demo.repository.BookRepository;
 @Transactional
 public class BookService {
 
+    // This is a book service class that provides methods to manage books in the
+    // library system.
     private final BookRepository bookRepository;
 
     public BookService(BookRepository bookRepository) {
