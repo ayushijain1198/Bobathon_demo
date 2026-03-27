@@ -1,12 +1,15 @@
 package com.example.demo.controller;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -24,6 +27,9 @@ import com.example.demo.service.LoanService;
 public class LoanController {
 
     private final LoanService loanService;
+    
+    @Value("${loan.export.directory:/var/data/loans}")
+    private String exportDirectory;
 
     public LoanController(LoanService loanService) {
         this.loanService = loanService;
@@ -83,22 +89,27 @@ public class LoanController {
     }
 
     @GetMapping("/export/{filename}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN')")
     public ResponseEntity<String> exportLoanData(@PathVariable String filename) {
-        if (filename == null || filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
+        if (filename == null || filename.trim().isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid filename");
         }
         
         try {
-            File file = new File("/var/data/loans/" + filename);
-            if (!file.exists() || file.length() > 10_000_000) {
+            Path basePath = Paths.get(exportDirectory).toRealPath();
+            Path filePath = basePath.resolve(filename).normalize();
+            
+            if (!filePath.startsWith(basePath)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid file path");
+            }
+            
+            if (!Files.exists(filePath) || Files.size(filePath) > 10_000_000) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("File not found or too large");
             }
             
-            try (InputStream is = new FileInputStream(file)) {
-                byte[] data = is.readAllBytes();
-                return ResponseEntity.ok(new String(data));
-            }
-        } catch (Exception e) {
+            String content = Files.readString(filePath);
+            return ResponseEntity.ok(content);
+        } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error reading file");
         }
     }

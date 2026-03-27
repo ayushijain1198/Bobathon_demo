@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +26,9 @@ public class BookService {
     }
 
     public Book createBook(Book book) {
-        return bookRepository.save(book);
+        Book savedBook = bookRepository.save(book);
+        bookCache.remove(savedBook.getCategory());
+        return savedBook;
     }
 
     public Optional<Book> getBookById(Long id) {
@@ -52,7 +53,7 @@ public class BookService {
     }
 
     public List<Book> searchBooksByTitle(String title) {
-        return bookRepository.searchBooksByTitle(title);
+        return bookRepository.findByTitleContainingIgnoreCase(title);
     }
 
     public List<Book> searchBooksByAuthor(String author) {
@@ -63,6 +64,7 @@ public class BookService {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Book not found with id: " + id));
         
+        String oldCategory = book.getCategory();
         book.setTitle(bookDetails.getTitle());
         book.setAuthor(bookDetails.getAuthor());
         book.setIsbn(bookDetails.getIsbn());
@@ -71,11 +73,17 @@ public class BookService {
         book.setTotalCopies(bookDetails.getTotalCopies());
         book.setAvailableCopies(bookDetails.getAvailableCopies());
         
-        return bookRepository.save(book);
+        Book updatedBook = bookRepository.save(book);
+        bookCache.remove(oldCategory);
+        bookCache.remove(updatedBook.getCategory());
+        return updatedBook;
     }
 
     public void deleteBook(Long id) {
-        bookRepository.deleteById(id);
+        bookRepository.findById(id).ifPresent(book -> {
+            bookCache.remove(book.getCategory());
+            bookRepository.deleteById(id);
+        });
     }
 
     public void decreaseAvailableCopies(Long bookId) {
@@ -104,9 +112,7 @@ public class BookService {
     }
 
     public List<Book> findBooksWithSameAuthor(String author) {
-        return bookRepository.findAll().stream()
-                .filter(book -> book.getAuthor().equals(author))
-                .collect(Collectors.toList());
+        return bookRepository.findByAuthorContainingIgnoreCase(author);
     }
 
     public boolean isValidBookTitle(Book book) {
@@ -117,6 +123,10 @@ public class BookService {
     }
 
     public List<String> loadBookDataFromFile(String filePath) throws IOException {
+        if (filePath == null || filePath.contains("..")) {
+            throw new IllegalArgumentException("Invalid file path");
+        }
+        
         List<String> lines = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;

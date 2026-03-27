@@ -2,6 +2,8 @@ package com.example.demo.controller;
 
 import java.time.LocalDateTime;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,6 +28,8 @@ import com.example.demo.security.JwtUtil;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
@@ -62,9 +66,11 @@ public class AuthController {
 
             return ResponseEntity.ok(new AuthResponse(token, user.getUsername(), user.getRole()));
         } catch (AuthenticationException e) {
+            logger.warn("Authentication failed: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Invalid username or password");
         } catch (Exception e) {
+            logger.error("Login error", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An error occurred during login");
         }
@@ -121,6 +127,7 @@ public class AuthController {
             }
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
         } catch (Exception e) {
+            logger.error("Token validation error", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Token validation failed");
         }

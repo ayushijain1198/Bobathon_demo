@@ -38,8 +38,7 @@ public class BookController {
         if (query == null || query.trim().isEmpty()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        String upperQuery = query.toUpperCase();
-        List<Book> books = bookService.searchBooksByTitle(upperQuery);
+        List<Book> books = bookService.searchBooksByTitle(query);
         return new ResponseEntity<>(books, HttpStatus.OK);
     }
 

@@ -3,7 +3,6 @@ package com.example.demo.service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +15,6 @@ import com.example.demo.repository.MemberRepository;
 public class MemberService {
 
     private final MemberRepository memberRepository;
-    private ConcurrentHashMap<Long, Integer> memberAccessCount = new ConcurrentHashMap<>();
 
     public MemberService(MemberRepository memberRepository) {
         this.memberRepository = memberRepository;
@@ -100,12 +98,8 @@ public class MemberService {
                 .collect(java.util.stream.Collectors.toList());
     }
 
-    public int getMemberAccessCount(Long memberId) {
-        return memberAccessCount.getOrDefault(memberId, 0);
-    }
-
     public void processMembers(List<Member> members) {
-        members.removeIf(member -> member.getEmail().contains("@"));
+        members.removeIf(member -> !member.getEmail().contains("@"));
     }
 }
 
