@@ -36,6 +36,8 @@ jobs:
       - name: Run Bob review
         env:
           BOB_API_KEY: ${{ secrets.BOB_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.BOB_API_KEY }}
+          API_KEY: ${{ secrets.BOB_API_KEY }}
         run: |
           # Ensure Bob is authenticated
           if [ -z "$BOB_API_KEY" ]; then
@@ -44,6 +46,7 @@ jobs:
             exit 1
           fi
           
+          echo "Running Bob review with authentication..."
           # Run Bob review
           bob < bob_input.txt > bob_review.md || echo "Bob review failed, but continuing..." > bob_review.md
 
