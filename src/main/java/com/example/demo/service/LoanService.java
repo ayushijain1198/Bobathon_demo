@@ -14,6 +14,7 @@ import com.example.demo.repository.LoanRepository;
 @Transactional
 public class LoanService {
 
+    // This is a loan service class that provides methods to manage loans in the
     private final LoanRepository loanRepository;
     private final BookService bookService;
     private final MemberService memberService;

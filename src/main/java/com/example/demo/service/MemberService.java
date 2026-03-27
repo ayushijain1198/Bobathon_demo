@@ -14,6 +14,7 @@ import com.example.demo.repository.MemberRepository;
 @Transactional
 public class MemberService {
 
+    // This is a member service class that provides methods to manage members
     private final MemberRepository memberRepository;
 
     public MemberService(MemberRepository memberRepository) {
