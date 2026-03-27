@@ -32,8 +32,6 @@ jobs:
         run: |
           git fetch origin "${{ github.event.pull_request.base.ref }}" --depth=1
           git diff -U5 "origin/${{ github.event.pull_request.base.ref }}...HEAD" > pr_diff.txt
-          wc -l pr_diff.txt
-          head -200 pr_diff.txt
 
       - name: Prepare Bob input
         run: |
@@ -52,8 +50,6 @@ jobs:
           fi
 
           PROMPT="$(cat bob_input.txt)"
-
-          echo "Running Bob..."
           bob --yolo --prompt "$PROMPT" > bob_raw.md
 
       - name: Extract final review
@@ -63,7 +59,10 @@ jobs:
           if grep -q "^No significant issues found\.$" bob_extracted.md; then
             echo "No significant issues found." > bob_review.md
           else
-            grep '^- ' bob_extracted.md > bob_review.md || true
+            grep '^- ' bob_extracted.md \
+              | sed 's/\[using tool attempt_completion:.*$//' \
+              | sed 's/[[:space:]]*$//' \
+              | awk '!seen[$0]++' > bob_review.md || true
           fi
 
           if [ ! -s bob_review.md ]; then
