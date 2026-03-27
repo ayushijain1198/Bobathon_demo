@@ -3,6 +3,7 @@ name: Bob PR Review
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -11,7 +12,7 @@ permissions:
 
 jobs:
   bob-review:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout code
@@ -32,17 +33,7 @@ jobs:
           echo "Changed files:" >> bob_input.txt
           cat changed_files.txt >> bob_input.txt
 
-      - name: Install GitHub CLI
-        run: |
-          type gh || brew install gh
-
-      - name: Install Bob Shell
-        run: |
-          echo "Replace this with your Bob Shell install/setup step"
-
       - name: Run Bob review
-        env:
-          BOB_API_KEY: ${{ secrets.BOB_API_KEY }}
         run: |
           bob < bob_input.txt > bob_review.md
 
@@ -55,6 +46,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh pr comment ${{ github.event.pull_request.number }} \
+            --body-file bob_review.md \
             --edit-last \
-            --create-if-none \
-            --body-file bob_review.md
+            --create-if-none
