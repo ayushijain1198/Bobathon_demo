@@ -1,0 +1,28 @@
+Review this pull request against the base branch.
+
+Rules:
+- Review only the files listed in changed_files.txt
+- Ignore formatting-only issues
+- Ignore generated files, lockfiles, and snapshots
+- Focus on correctness, security, maintainability, performance, and missing tests
+
+Output format:
+# Bob Review Summary
+
+## High
+- [file path] Issue
+  - Why it matters
+  - Suggested fix
+
+## Medium
+- [file path] Issue
+  - Why it matters
+  - Suggested fix
+
+## Low
+- [file path] Issue
+  - Why it matters
+  - Suggested fix
+
+If there are no meaningful findings, output exactly:
+No significant issues found.
