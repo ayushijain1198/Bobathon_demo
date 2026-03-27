@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   bob-review:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -20,20 +20,43 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Load Node (nvm)
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # ✅ FIXED: non-interactive install
+      - name: Install Bob
+        shell: bash
         run: |
-          export NVM_DIR="$HOME/.nvm"
-          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-          nvm use 22
+          curl -s https://s3.us-south.cloud-object-storage.appdomain.cloud/bobshell/install-bobshell.sh | bash -s -- --pm npm
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          echo "$HOME/bin" >> $GITHUB_PATH
           which bob
           bob --version
 
+      - name: Verify Bob
+        shell: bash
+        run: |
+          command -v bob || (echo "Bob not found after install" && exit 1)
+          bob --version
+
       - name: Get PR diff
+        shell: bash
         run: |
           git fetch origin "${{ github.event.pull_request.base.ref }}" --depth=1
-          git diff -U5 "origin/${{ github.event.pull_request.base.ref }}...HEAD" > pr_diff.txt
+
+          git diff -U5 "origin/${{ github.event.pull_request.base.ref }}...HEAD" \
+            -- . \
+            ':(exclude).github/workflows/**' \
+            ':(exclude)README.md' > pr_diff.txt
+
+          if [ ! -s pr_diff.txt ]; then
+            echo "No code diff to review." > pr_diff.txt
+          fi
 
       - name: Prepare Bob input
+        shell: bash
         run: |
           cp .github/bob/pr-review-prompt.txt bob_input.txt
           echo "" >> bob_input.txt
@@ -41,6 +64,7 @@ jobs:
           cat pr_diff.txt >> bob_input.txt
 
       - name: Run Bob review
+        shell: bash
         env:
           BOBSHELL_API_KEY: ${{ secrets.BOB_API_KEY }}
         run: |
@@ -53,16 +77,19 @@ jobs:
           bob --yolo --prompt "$PROMPT" > bob_raw.md
 
       - name: Extract final review
+        shell: bash
         run: |
           awk '/^===FINAL_REVIEW===/{flag=1; next} flag' bob_raw.md > bob_extracted.md
 
           if grep -q "^No significant issues found\.$" bob_extracted.md; then
             echo "No significant issues found." > bob_review.md
           else
-            grep '^- ' bob_extracted.md \
-              | sed 's/\[using tool attempt_completion:.*$//' \
+            sed 's/\[using tool attempt_completion:.*$//' bob_extracted.md \
+              | sed 's/\[Successfully completed.*$//' \
+              | sed 's/---output---.*$//' \
               | sed 's/[[:space:]]*$//' \
-              | awk '!seen[$0]++' > bob_review.md || true
+              | awk 'NF' \
+              | awk '!seen[$0]++' > bob_review.md
           fi
 
           if [ ! -s bob_review.md ]; then
@@ -70,10 +97,9 @@ jobs:
           fi
 
       - name: Post PR comment
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh pr comment ${{ github.event.pull_request.number }} \
-            --body-file bob_review.md \
-            --edit-last \
-            --create-if-none
+            --body-file bob_review.md
