@@ -94,6 +94,7 @@ public class LoanService {
         return loanRepository.save(loan);
     }
 
+    // service/LoanService.java
     public void updateOverdueLoans() {
         List<Loan> overdueLoans = loanRepository.findOverdueLoans(LocalDate.now());
         for (Loan loan : overdueLoans) {

@@ -83,6 +83,7 @@ public class BookService {
         }
     }
 
+    // service/BookService.java
     public void increaseAvailableCopies(Long bookId) {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new RuntimeException("Book not found with id: " + bookId));
