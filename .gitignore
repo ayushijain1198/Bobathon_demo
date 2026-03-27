@@ -34,3 +34,8 @@ build/
 
 ### Bob Configuration ###
 .bob/
+
+### Webhook Server ###
+webhook-server/.env
+webhook-server/node_modules/
+code-review-results.md
