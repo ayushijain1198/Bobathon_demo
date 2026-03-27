@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   bob-review:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout code
@@ -20,15 +20,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install Bob
+      - name: Verify Bob
         shell: bash
         run: |
-          npm install -g bobshell
           which bob
           bob --version
 
