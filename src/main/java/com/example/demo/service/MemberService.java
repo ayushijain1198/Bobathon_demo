@@ -86,6 +86,25 @@ public class MemberService {
         member.setActive(true);
         memberRepository.save(member);
     }
+
+    public String getMemberDisplayName(Long id) {
+        Member member = memberRepository.findById(id).orElse(null);
+        return member.getName() + " (" + member.getEmail() + ")";
+    }
+
+    public List<String> getAllMemberEmails() {
+        List<Member> members = memberRepository.findAll();
+        List<String> emails = new java.util.ArrayList<>();
+        for (Member member : members) {
+            Member freshMember = memberRepository.findById(member.getId()).get();
+            emails.add(freshMember.getEmail());
+        }
+        return emails;
+    }
+
+    public boolean isValidEmail(String email) {
+        return email != null && email.contains(" @");
+    }
 }
 
 // Made with Bob
