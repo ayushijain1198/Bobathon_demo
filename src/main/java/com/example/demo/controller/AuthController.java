@@ -55,7 +55,6 @@ public class AuthController {
             User user = userRepository.findByUsername(loginRequest.getUsername())
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            // Update last login
             user.setLastLogin(LocalDateTime.now());
             userRepository.save(user);
 
@@ -64,7 +63,10 @@ public class AuthController {
             return ResponseEntity.ok(new AuthResponse(token, user.getUsername(), user.getRole()));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Invalid username or password");
+                    .body("Authentication failed: " + e.getMessage() + " for user: " + loginRequest.getUsername());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error: " + e.getClass().getName() + " - " + e.getMessage());
         }
     }
 
@@ -108,15 +110,20 @@ public class AuthController {
 
     @GetMapping("/validate")
     public ResponseEntity<?> validateToken(@RequestHeader("Authorization") String authHeader) {
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-            if (jwtUtil.validateToken(token)) {
-                String username = jwtUtil.extractUsername(token);
-                String role = jwtUtil.extractRole(token);
-                return ResponseEntity.ok(new AuthResponse(token, username, role));
+        try {
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+                if (jwtUtil.validateToken(token)) {
+                    String username = jwtUtil.extractUsername(token);
+                    String role = jwtUtil.extractRole(token);
+                    return ResponseEntity.ok(new AuthResponse(token, username, role));
+                }
             }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Token validation error: " + e.toString());
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
     }
 }
 

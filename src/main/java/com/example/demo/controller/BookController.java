@@ -33,6 +33,13 @@ public class BookController {
         return new ResponseEntity<>(createdBook, HttpStatus.CREATED);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<Book>> searchBooks(@RequestParam String query) {
+        String upperQuery = query.toUpperCase();
+        List<Book> books = bookService.searchBooksByTitle(upperQuery);
+        return new ResponseEntity<>(books, HttpStatus.OK);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Book> getBookById(@PathVariable Long id) {
         return bookService.getBookById(id)

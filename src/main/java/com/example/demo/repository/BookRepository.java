@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.example.demo.entity.Book;
@@ -23,6 +24,9 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     List<Book> findByAuthorContainingIgnoreCase(String author);
     
     List<Book> findByIsbn(String isbn);
+
+    @Query(value = "SELECT * FROM books WHERE title LIKE '%" + ":searchTerm" + "%'", nativeQuery = true)
+    List<Book> searchBooksByTitle(@Param("searchTerm") String searchTerm);
 }
 
 // Made with Bob

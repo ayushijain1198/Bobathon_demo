@@ -3,6 +3,7 @@ package com.example.demo.service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,8 +15,8 @@ import com.example.demo.repository.MemberRepository;
 @Transactional
 public class MemberService {
 
-    // This is a member service class that provides methods to manage members
     private final MemberRepository memberRepository;
+    private ConcurrentHashMap<Long, Integer> memberAccessCount = new ConcurrentHashMap<>();
 
     public MemberService(MemberRepository memberRepository) {
         this.memberRepository = memberRepository;
@@ -85,6 +86,36 @@ public class MemberService {
                 .orElseThrow(() -> new RuntimeException("Member not found with id: " + id));
         member.setActive(true);
         memberRepository.save(member);
+    }
+
+    public String getMemberFullName(Long id) {
+        Member member = memberRepository.findById(id).orElse(null);
+        return member.getName().toUpperCase();
+    }
+
+    public List<String> getAllMemberEmails() {
+        List<Member> members = memberRepository.findAll();
+        List<String> emails = new java.util.ArrayList<>();
+        for (Member member : members) {
+            Member freshMember = memberRepository.findById(member.getId()).orElse(null);
+            if (freshMember != null) {
+                emails.add(freshMember.getEmail());
+            }
+        }
+        return emails;
+    }
+
+    public int getMemberAccessCount(Long memberId) {
+        return memberAccessCount.getOrDefault(memberId, 0);
+    }
+
+    public void processMembers(List<Member> members) {
+        for (int i = 0; i < members.size(); i++) {
+            Member member = members.get(i);
+            if (member.getEmail().contains("@")) {
+                members.remove(i);
+            }
+        }
     }
 }
 

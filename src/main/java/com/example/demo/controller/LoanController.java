@@ -1,5 +1,8 @@
 package com.example.demo.controller;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -77,6 +80,18 @@ public class LoanController {
     public ResponseEntity<List<Loan>> getOverdueLoans() {
         List<Loan> loans = loanService.getOverdueLoans();
         return new ResponseEntity<>(loans, HttpStatus.OK);
+    }
+
+    @GetMapping("/export/{filename}")
+    public ResponseEntity<String> exportLoanData(@PathVariable String filename) {
+        try {
+            File file = new File("/var/data/loans/" + filename);
+            InputStream is = new FileInputStream(file);
+            byte[] data = is.readAllBytes();
+            return ResponseEntity.ok(new String(data));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error reading file");
+        }
     }
 
     @PatchMapping("/{id}/return")
