@@ -1,0 +1,771 @@
+openapi: 3.0.1
+info:
+  title: Library Management System API
+  description: |
+    This API provides a collection of services to manage a library system including books, members, and loans.
+    
+    ## Features
+    - Manage books (CRUD operations)
+    - Manage library members (CRUD operations)
+    - Handle book loans and returns
+    - Track overdue loans
+    - Search functionality for books and members
+    
+    ## H2 Console
+    Access the H2 database console at: http://localhost:8080/h2-console
+    - JDBC URL: jdbc:h2:mem:librarydb
+    - Username: sa
+    - Password: (leave empty)
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+paths:
+  /api/books:
+    get:
+      tags:
+        - Books
+      summary: Get all books
+      operationId: getAllBooks
+      responses:
+        '200':
+          description: Successfully retrieved all books
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+    post:
+      tags:
+        - Books
+      summary: Create a new book
+      operationId: createBook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Book'
+            example:
+              title: "Clean Code"
+              author: "Robert C. Martin"
+              isbn: "978-0132350884"
+              category: "Programming"
+              available: true
+              totalCopies: 3
+              availableCopies: 3
+      responses:
+        '201':
+          description: Book created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+
+  /api/books/{id}:
+    get:
+      tags:
+        - Books
+      summary: Get book by ID
+      operationId: getBookById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Book found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          description: Book not found
+    put:
+      tags:
+        - Books
+      summary: Update a book
+      operationId: updateBook
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Book'
+      responses:
+        '200':
+          description: Book updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          description: Book not found
+    delete:
+      tags:
+        - Books
+      summary: Delete a book
+      operationId: deleteBook
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Book deleted successfully
+
+  /api/books/category/{category}:
+    get:
+      tags:
+        - Books
+      summary: Get books by category
+      operationId: getBooksByCategory
+      parameters:
+        - name: category
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "Programming"
+      responses:
+        '200':
+          description: Books retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+
+  /api/books/available:
+    get:
+      tags:
+        - Books
+      summary: Get all available books
+      operationId: getAvailableBooks
+      responses:
+        '200':
+          description: Available books retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+
+  /api/books/search/title:
+    get:
+      tags:
+        - Books
+      summary: Search books by title
+      operationId: searchBooksByTitle
+      parameters:
+        - name: title
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "Clean"
+      responses:
+        '200':
+          description: Books found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+
+  /api/books/search/author:
+    get:
+      tags:
+        - Books
+      summary: Search books by author
+      operationId: searchBooksByAuthor
+      parameters:
+        - name: author
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "Martin"
+      responses:
+        '200':
+          description: Books found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+
+  /api/members:
+    get:
+      tags:
+        - Members
+      summary: Get all members
+      operationId: getAllMembers
+      responses:
+        '200':
+          description: Successfully retrieved all members
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Member'
+    post:
+      tags:
+        - Members
+      summary: Create a new member
+      operationId: createMember
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Member'
+            example:
+              name: "John Doe"
+              email: "john.doe@example.com"
+              phone: "123-456-7890"
+              membershipType: "PREMIUM"
+              active: true
+      responses:
+        '201':
+          description: Member created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+
+  /api/members/{id}:
+    get:
+      tags:
+        - Members
+      summary: Get member by ID
+      operationId: getMemberById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Member found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+        '404':
+          description: Member not found
+    put:
+      tags:
+        - Members
+      summary: Update a member
+      operationId: updateMember
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Member'
+      responses:
+        '200':
+          description: Member updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+        '404':
+          description: Member not found
+    delete:
+      tags:
+        - Members
+      summary: Delete a member
+      operationId: deleteMember
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Member deleted successfully
+
+  /api/members/email/{email}:
+    get:
+      tags:
+        - Members
+      summary: Get member by email
+      operationId: getMemberByEmail
+      parameters:
+        - name: email
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "john.doe@example.com"
+      responses:
+        '200':
+          description: Member found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+        '404':
+          description: Member not found
+
+  /api/members/active:
+    get:
+      tags:
+        - Members
+      summary: Get all active members
+      operationId: getActiveMembers
+      responses:
+        '200':
+          description: Active members retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Member'
+
+  /api/members/type/{type}:
+    get:
+      tags:
+        - Members
+      summary: Get members by membership type
+      operationId: getMembersByType
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [REGULAR, PREMIUM]
+          example: "PREMIUM"
+      responses:
+        '200':
+          description: Members retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Member'
+
+  /api/members/search:
+    get:
+      tags:
+        - Members
+      summary: Search members by name
+      operationId: searchMembersByName
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "John"
+      responses:
+        '200':
+          description: Members found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Member'
+
+  /api/members/{id}/deactivate:
+    patch:
+      tags:
+        - Members
+      summary: Deactivate a member
+      operationId: deactivateMember
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Member deactivated successfully
+        '404':
+          description: Member not found
+
+  /api/members/{id}/activate:
+    patch:
+      tags:
+        - Members
+      summary: Activate a member
+      operationId: activateMember
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Member activated successfully
+        '404':
+          description: Member not found
+
+  /api/loans:
+    get:
+      tags:
+        - Loans
+      summary: Get all loans
+      operationId: getAllLoans
+      responses:
+        '200':
+          description: Successfully retrieved all loans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Loan'
+    post:
+      tags:
+        - Loans
+      summary: Create a new loan (borrow a book)
+      operationId: createLoan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoanRequest'
+            example:
+              bookId: 1
+              memberId: 1
+      responses:
+        '201':
+          description: Loan created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loan'
+        '400':
+          description: Bad request (book not available or member not active)
+
+  /api/loans/{id}:
+    get:
+      tags:
+        - Loans
+      summary: Get loan by ID
+      operationId: getLoanById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Loan found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loan'
+        '404':
+          description: Loan not found
+    delete:
+      tags:
+        - Loans
+      summary: Delete a loan
+      operationId: deleteLoan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Loan deleted successfully
+
+  /api/loans/member/{memberId}:
+    get:
+      tags:
+        - Loans
+      summary: Get all loans by member
+      operationId: getLoansByMember
+      parameters:
+        - name: memberId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Loans retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Loan'
+
+  /api/loans/book/{bookId}:
+    get:
+      tags:
+        - Loans
+      summary: Get all loans by book
+      operationId: getLoansByBook
+      parameters:
+        - name: bookId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Loans retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Loan'
+
+  /api/loans/member/{memberId}/active:
+    get:
+      tags:
+        - Loans
+      summary: Get active loans by member
+      operationId: getActiveLoansByMember
+      parameters:
+        - name: memberId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Active loans retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Loan'
+
+  /api/loans/book/{bookId}/active:
+    get:
+      tags:
+        - Loans
+      summary: Get active loans by book
+      operationId: getActiveLoansByBook
+      parameters:
+        - name: bookId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Active loans retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Loan'
+
+  /api/loans/overdue:
+    get:
+      tags:
+        - Loans
+      summary: Get all overdue loans
+      operationId: getOverdueLoans
+      responses:
+        '200':
+          description: Overdue loans retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Loan'
+
+  /api/loans/{id}/return:
+    patch:
+      tags:
+        - Loans
+      summary: Return a borrowed book
+      operationId: returnBook
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Book returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loan'
+        '400':
+          description: Bad request (loan not active)
+
+  /api/loans/update-overdue:
+    post:
+      tags:
+        - Loans
+      summary: Update status of overdue loans
+      operationId: updateOverdueLoans
+      responses:
+        '200':
+          description: Overdue loans updated successfully
+
+components:
+  schemas:
+    Book:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        title:
+          type: string
+          example: "Clean Code"
+        author:
+          type: string
+          example: "Robert C. Martin"
+        isbn:
+          type: string
+          example: "978-0132350884"
+        category:
+          type: string
+          example: "Programming"
+        available:
+          type: boolean
+          example: true
+        totalCopies:
+          type: integer
+          example: 3
+        availableCopies:
+          type: integer
+          example: 3
+
+    Member:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "John Doe"
+        email:
+          type: string
+          example: "john.doe@example.com"
+        phone:
+          type: string
+          example: "123-456-7890"
+        membershipDate:
+          type: string
+          format: date
+          example: "2024-01-15"
+        membershipType:
+          type: string
+          enum: [REGULAR, PREMIUM]
+          example: "PREMIUM"
+        active:
+          type: boolean
+          example: true
+
+    Loan:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        bookId:
+          type: integer
+          format: int64
+          example: 1
+        memberId:
+          type: integer
+          format: int64
+          example: 1
+        loanDate:
+          type: string
+          format: date
+          example: "2024-03-01"
+        dueDate:
+          type: string
+          format: date
+          example: "2024-03-15"
+        returnDate:
+          type: string
+          format: date
+          nullable: true
+          example: null
+        status:
+          type: string
+          enum: [ACTIVE, RETURNED, OVERDUE]
+          example: "ACTIVE"
+
+    LoanRequest:
+      type: object
+      required:
+        - bookId
+        - memberId
+      properties:
+        bookId:
+          type: integer
+          format: int64
+          example: 1
+        memberId:
+          type: integer
+          format: int64
+          example: 1
+
+# Made with Bob
